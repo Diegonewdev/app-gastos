@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Motorista - Uber</title>
+    
+    <!-- ================================ -->
+    <!-- CONFIGURAÇÕES PARA CELULAR/PWA -->
+    <!-- ================================ -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a237e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Motorista App">
+    <link rel="apple-touch-icon" href="icon-192x192.png">
+    <meta name="description" content="Controle suas corridas e gastos como motorista Uber">
+    <!-- ================================ -->
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Cabeçalho -->
+        <header>
+            <h1><i class="fas fa-car"></i> Controle Motorista</h1>
+            <p class="subtitle">Gerencie suas corridas e gastos do Uber</p>
+            <div class="data-atual">
+                <i class="fas fa-calendar-day"></i> 
+                <span id="data-hoje"></span>
+            </div>
+        </header>
+
+        <!-- Dashboard Principal -->
+        <div class="dashboard">
+            <div class="card saldo">
+                <h3><i class="fas fa-wallet"></i> Saldo do Dia</h3>
+                <p class="valor" id="saldo-dia">R$ 0,00</p>
+            </div>
+            
+            <div class="card ganhos">
+                <h3><i class="fas fa-money-bill-wave"></i> Ganhos</h3>
+                <p class="valor" id="total-ganhos">R$ 0,00</p>
+            </div>
+            
+            <div class="card gastos">
+                <h3><i class="fas fa-gas-pump"></i> Gastos</h3>
+                <p class="valor" id="total-gastos">R$ 0,00</p>
+            </div>
+        </div>
+
+        <!-- Dashboard KM -->
+        <div class="dashboard-km">
+            <div class="card-km">
+                <h3><i class="fas fa-road"></i> KM Rodados Hoje</h3>
+                <div class="km-input">
+                    <input type="number" id="km-rodados" placeholder="Digite os km" step="0.1" min="0" inputmode="decimal">
+                    <span class="km-unidade">km</span>
+                </div>
+                <button class="btn-km" id="salvar-km">
+                    <i class="fas fa-save"></i> Salvar KM
+                </button>
+            </div>
+            
+            <div class="card-km metricas">
+                <h3><i class="fas fa-calculator"></i> Métricas por KM</h3>
+                <div class="metricas-grid">
+                    <div class="metrica">
+                        <span class="metrica-label">Receita/KM</span>
+                        <span class="metrica-valor" id="receita-km">R$ 0,00</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="metrica-label">Custo/KM</span>
+                        <span class="metrica-valor custo" id="custo-km">R$ 0,00</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="metrica-label">Lucro/KM</span>
+                        <span class="metrica-valor lucro" id="lucro-km">R$ 0,00</span>
+                    </div>
+                    <div class="metrica">
+                        <span class="metrica-label">Média Geral</span>
+                        <span class="metrica-valor" id="media-geral">R$ 0,00/km</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões Rápidos -->
+        <div class="botoes-rapidos">
+            <button class="btn btn-corrida" id="btn-nova-corrida">
+                <i class="fas fa-plus-circle"></i> Nova Corrida
+            </button>
+            <button class="btn btn-gasto" id="btn-novo-gasto">
+                <i class="fas fa-minus-circle"></i> Novo Gasto
+            </button>
+            <button class="btn btn-relatorio" id="btn-relatorio">
+                <i class="fas fa-chart-bar"></i> Ver Relatório
+            </button>
+        </div>
+
+        <!-- Formulário Corrida -->
+        <div class="formulario" id="form-corrida">
+            <h3><i class="fas fa-taxi"></i> Nova Corrida</h3>
+            <div class="form-group">
+                <input type="number" id="valor-corrida" placeholder="Valor (R$)" step="0.01" min="0" inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <input type="text" id="descricao-corrida" placeholder="Descrição (opcional)">
+            </div>
+            <div class="form-botoes">
+                <button class="btn btn-cancelar" id="cancelar-corrida">Cancelar</button>
+                <button class="btn btn-salvar" id="salvar-corrida">Salvar Corrida</button>
+            </div>
+        </div>
+
+        <!-- Formulário Gasto -->
+        <div class="formulario" id="form-gasto">
+            <h3><i class="fas fa-gas-pump"></i> Novo Gasto</h3>
+            <div class="form-group">
+                <input type="number" id="valor-gasto" placeholder="Valor (R$)" step="0.01" min="0" inputmode="decimal">
+            </div>
+            <div class="form-group">
+                <select id="categoria-gasto">
+                    <option value="combustivel">Combustível</option>
+                    <option value="alimentacao">Alimentação</option>
+                    <option value="estacionamento">Estacionamento</option>
+                    <option value="pedagio">Pedágio</option>
+                    <option value="lavagem">Lavagem</option>
+                    <option value="manutencao">Manutenção</option>
+                    <option value="outro">Outro</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" id="descricao-gasto" placeholder="Descrição (opcional)">
+            </div>
+            <div class="form-botoes">
+                <button class="btn btn-cancelar" id="cancelar-gasto">Cancelar</button>
+                <button class="btn btn-salvar" id="salvar-gasto">Salvar Gasto</button>
+            </div>
+        </div>
+
+        <!-- Registros do Dia -->
+        <div class="registros">
+            <div class="registros-header">
+                <h3><i class="fas fa-list"></i> Registros de Hoje</h3>
+                <div class="contador-registros">
+                    <span id="total-registros">0</span> registros
+                </div>
+            </div>
+            
+            <div class="filtros">
+                <button class="filtro-btn ativo" data-tipo="todos">Todos</button>
+                <button class="filtro-btn" data-tipo="corrida">Corridas</button>
+                <button class="filtro-btn" data-tipo="gasto">Gastos</button>
+                <button class="btn-limpar" id="btn-limpar-hoje">
+                    <i class="fas fa-trash"></i> Limpar Hoje
+                </button>
+            </div>
+            
+            <div class="tabela-container">
+                <table id="tabela-registros">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Hora</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpo-tabela">
+                        <!-- JavaScript vai preencher aqui -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="sem-registros" id="sem-registros">
+                <i class="fas fa-clipboard-list"></i>
+                <p>Nenhum registro hoje.</p>
+                <p class="subtitulo">Adicione sua primeira corrida ou gasto!</p>
+            </div>
+        </div>
+
+        <!-- Seção de Histórico -->
+        <div class="historico">
+            <h3><i class="fas fa-history"></i> Histórico Rápido</h3>
+            <div class="modo-historico">
+                <button class="btn-historico ativo" data-modo="dia">Dia Atual</button>
+                <button class="btn-historico" data-modo="media">Média Mensal</button>
+            </div>
+            <div class="historico-cards">
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-media">Média Diária</span>
+                        <span class="historico-valor" id="media-diaria">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-melhor">Melhor Dia</span>
+                        <span class="historico-valor" id="melhor-dia">R$ 0,00</span>
+                    </div>
+                </div>
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-road"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-km">KM/Dia</span>
+                        <span class="historico-valor" id="km-medio">0 km</span>
+                    </div>
+                </div>
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-km-mes">KM/Mês</span>
+                        <span class="historico-valor" id="km-mes">0 km</span>
+                    </div>
+                </div>
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-total-km">Total KM</span>
+                        <span class="historico-valor" id="total-km">0 km</span>
+                    </div>
+                </div>
+                <div class="historico-card">
+                    <div class="historico-icon">
+                        <i class="fas fa-money-bill-trend-up"></i>
+                    </div>
+                    <div class="historico-info">
+                        <span class="historico-label" id="label-lucro">Lucro/KM</span>
+                        <span class="historico-valor" id="lucro-km-medio">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p><i class="fas fa-user"></i> Motorista Uber - Rio de Janeiro</p>
+                    <p><i class="fas fa-code"></i> Desenvolvido por você com ajuda do DeepSeek</p>
+                </div>
+                <div class="footer-actions">
+                    <button class="btn-footer" id="btn-exportar">
+                        <i class="fas fa-file-export"></i> Exportar CSV
+                    </button>
+                    <button class="btn-footer" id="btn-backup">
+                        <i class="fas fa-cloud-upload-alt"></i> Backup
+                    </button>
+                    <button class="btn-footer" id="btn-config">
+                        <i class="fas fa-cog"></i> Configurações
+                    </button>
+                </div>
+            </div>
+            <p class="footer-copyright">© 2024 Controle Motorista App - Versão 3.0</p>
+            <p class="pwa-info" id="pwa-status">📱 Pronto para instalar no celular!</p>
+        </footer>
+    </div>
+
+    <!-- Modal de Relatório -->
+    <div class="modal" id="modal-relatorio">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-chart-pie"></i> Relatório Detalhado</h3>
+                <button class="btn-fechar" id="fechar-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="relatorio-resumo">
+                    <h4>Resumo do Dia</h4>
+                    <div class="resumo-grid">
+                        <div class="resumo-item">
+                            <span>Total Ganhos:</span>
+                            <strong id="relatorio-ganhos">R$ 0,00</strong>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Total Gastos:</span>
+                            <strong id="relatorio-gastos">R$ 0,00</strong>
+                        </div>
+                        <div class="resumo-item">
+                            <span>Lucro Líquido:</span>
+                            <strong id="relatorio-lucro">R$ 0,00</strong>
+                        </div>
+                        <div class="resumo-item">
+                            <span>KM Rodados:</span>
+                            <strong id="relatorio-km">0 km</strong>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="relatorio-dicas">
+                    <h4><i class="fas fa-lightbulb"></i> Dicas para Melhorar</h4>
+                    <ul id="lista-dicas">
+                        <li>Adicione seus gastos diariamente para controle preciso</li>
+                        <li>Mantenha a quilometragem atualizada</li>
+                        <li>Revise suas métricas por KM regularmente</li>
+                        <li>Use no celular para controle em tempo real!</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-modal" id="btn-instalar">
+                    <i class="fas fa-mobile-alt"></i> Instalar no Celular
+                </button>
+                <button class="btn-modal" id="btn-imprimir">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button class="btn-modal btn-modal-primary" id="btn-compartilhar">
+                    <i class="fas fa-share-alt"></i> Compartilhar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================ -->
+    <!-- SCRIPTS PARA PWA/CELULAR -->
+    <!-- ================================ -->
+    <script>
+        // Detecta se está no celular
+        function isMobile() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('Service Worker registrado com sucesso: ', registration.scope);
+                        
+                        // Mostra botão de instalação
+                        if (isMobile()) {
+                            document.getElementById('pwa-status').textContent = '📱 App pronto para instalar!';
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log('Falha ao registrar Service Worker: ', error);
+                    });
+            });
+        }
+        
+        // Botão de instalar PWA
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Mostra botão de instalação no modal
+            document.getElementById('btn-instalar').style.display = 'flex';
+            
+            document.getElementById('btn-instalar').addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuário instalou o PWA');
+                        document.getElementById('pwa-status').textContent = '✅ App instalado no celular!';
+                    }
+                    deferredPrompt = null;
+                });
+            });
+        });
+        
+        // Detecta se app está instalado
+        window.addEventListener('appinstalled', () => {
+            document.getElementById('pwa-status').textContent = '✅ App instalado no celular!';
+            document.getElementById('btn-instalar').style.display = 'none';
+        });
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
